@@ -1,0 +1,102 @@
+/* styles.css */
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.container {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    max-width: 700px;
+    width: 100%;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+label {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+input[type="text"] {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+button {
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+.result {
+    margin-top: 20px;
+    font-weight: bold;
+    font-size: 18px;
+    white-space: pre-line; /* Preserve line breaks */
+}
+
+
+.divisionTable {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    white-space: pre; /* Preserve whitespace formatting */
+    font-family: "Courier New", Courier, monospace; /* Monospaced font for alignment */
+    font-size: 14px;
+    line-height: 1.5;
+    overflow-x: auto; /* Allow horizontal scrolling for long calculations */
+    border-left: 2px solid #333; /* Divider to indicate long division */
+    padding-left: 10px;
+}
+
+.division-step {
+    margin-bottom: 10px;
+}
+
+.division-line {
+    border-bottom: 2px solid #333;
+    display: inline-block;
+    margin-bottom: 10px;
+}
+
+.quotient {
+    font-weight: bold;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.highlight {
+    color: #e74c3c; /* Highlight color for polynomial and operation */
+}

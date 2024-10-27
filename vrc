@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VRC Calculator</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Vertical Redundancy Check (VRC) Calculator</h1>
+        
+        <form id="vrcForm">
+            <label for="data">Enter Data (binary, space-separated rows):</label>
+            <input type="text" id="data" required placeholder="e.g. 1101 1010 1001">
+            <button type="submit">Calculate VRC</button>
+        </form>
+        
+        <div id="result" class="result"></div>
+
+        <form id="checkVrcForm">
+            <label for="receivedData">Enter Received Data (including VRC):</label>
+            <input type="text" id="receivedData" required placeholder="e.g. 11010 10100 10010">
+            <button type="submit">Check VRC</button>
+        </form>
+        
+        <div id="checkResult" class="result"></div>
+        <button onclick="location.href='index.html'">Home</button>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRC Calculator</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Cyclic Redundancy Check (CRC) Calculator</h1>
+        <form id="crcForm">
+            <label for="data">Enter Data (binary):</label>
+            <input type="text" id="data" required>
+            <label for="polynomial">Enter Polynomial (binary):</label>
+            <input type="text" id="polynomial" required>
+            <button type="submit">Calculate CRC</button>
+        </form>
+        <div id="result" class="result"></div>
+<div id="finalRemainder" class="result"></div>
+<div id="divisionTable" class="divisionTable"></div>
+<button onclick="location.href='index.html'">Home</button>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
