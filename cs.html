@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hamming Code Calculator</title>
+    <title>Checksum Calculator</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
-        <h1>Hamming Code Calculator</h1>
-        <form id="hammingForm">
-            <label for="data">Enter 4 bit binary data:</label>
+        <h1>Checksum Calculator</h1>
+        <form id="checksumForm">
+            <label for="data">Enter 8-bit binary Data (binary blocks, separated by spaces):</label>
             <input type="text" id="data" required>
-            <button type="submit">Calculate Hamming Code</button>
+            <button type="submit">Calculate Checksum</button>
         </form>
         <div id="result" class="result"></div>
         <button onclick="location.href='index.html'">Home</button>
     </div>
-    <script src="hammingScript.js"></script>
+    <script src="checksum.js"></script>
 </body>
 </html>
