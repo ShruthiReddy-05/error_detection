@@ -2,29 +2,53 @@ document.getElementById('checksumForm')?.addEventListener('submit', function(eve
     event.preventDefault();
 
     const data = document.getElementById('data').value;
-    const result = calculateChecksum(data);
+    const result = calculateChecksumBinary(data);
     document.getElementById('result').innerText = `Checksum: ${result.checksum}\n\nStep-by-Step Calculation:\n${result.steps.join('\n')}`;
 });
 
-function calculateChecksum(data) {
+function calculateChecksumBinary(data) {
     const steps = [];
-    const bits = data.match(/.{1,8}/g).map(byte => parseInt(byte, 2)); // Split into 8-bit chunks and convert to integers
-    let sum = 0;
+    const bits = data.match(/.{1,8}/g); // Split into 8-bit chunks
+    let checksum = '00000000';
 
-    // Sum up each byte
+    // Sum up each byte in binary
     bits.forEach((byte, index) => {
-        sum += byte;
-        steps.push(`Adding byte ${index + 1} (${byte.toString(2).padStart(8, '0')}): Current sum = ${sum}`);
+        const result = addBinary(checksum, byte);
+        steps.push(`Adding byte ${index + 1} (${byte}):`);
+        steps.push(`Previous checksum: ${checksum}`);
+        steps.push(`Intermediate sum: ${result.intermediateSum}`);
+        steps.push(`Carry (if overflowed): ${result.carry}`);
+        checksum = result.sumWithCarry; // Update checksum with carry applied
+        steps.push(`Updated checksum: ${checksum}`);
     });
 
-    // Calculate checksum as sum modulo 256
-    const checksum = sum % 256;
-    steps.push(`Total sum = ${sum}`);
-    steps.push(`Checksum (sum % 256) = ${checksum}`);
-
-    // Convert checksum to binary string for display
-    const checksumBinary = checksum.toString(2).padStart(8, '0');
-    steps.push(`Checksum in binary = ${checksumBinary}`);
-
-    return { checksum: checksumBinary, steps };
+    return { checksum, steps };
 }
+
+function addBinary(a, b) {
+    let carry = 0;
+    let sum = '';
+
+    for (let i = 7; i >= 0; i--) {
+        const bitA = parseInt(a[i], 10);
+        const bitB = parseInt(b[i], 10);
+        const total = bitA + bitB + carry;
+        sum = (total % 2) + sum;
+        carry = total > 1 ? 1 : 0;
+    }
+
+    // Handle overflow by adding carry to the sum if it exists
+    let finalSum = sum;
+    if (carry) {
+        const carryResult = addBinary(sum, '00000001');
+        finalSum = carryResult.sumWithCarry;
+        carry = carryResult.carry;
+    }
+
+    return {
+        intermediateSum: sum,
+        carry: carry ? '1' : '0',
+        sumWithCarry: finalSum
+    };
+}
+
