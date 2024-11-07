@@ -4,23 +4,354 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CRC Calculator</title>
-    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #0f0f0f;
+            color: #d1ffd6;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #particleCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            padding: 40px;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.7));
+            border-radius: 12px;
+            box-shadow: 0 8px 15px rgba(0, 255, 0, 0.2);
+            text-align: center;
+            overflow-y: auto;
+            max-height: 90vh;
+            position: relative;
+            z-index: 1;
+            scrollbar-width: thin;
+            scrollbar-color: #00ff40 #1a1a1a;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            color: #66ff99;
+            text-shadow: 2px 2px 8px rgba(0, 255, 0, 0.8);
+        }
+
+        label, select {
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: block;
+            font-size: 1.1em;
+            color: #a4ffb4;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            font-size: 1.2em;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+            transition: all 0.3s ease;
+            background-color: #333;
+            color: #d1ffd6;
+        }
+
+        input:focus {
+            border-color: #00ff40;
+            outline: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            font-size: 1.2em;
+            background-color: #4e73df;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            background-color: #2e59d9;
+            transform: scale(1.1);
+        }
+
+        button:focus {
+            outline: none;
+        }
+
+        .result, .divisionTable {
+            margin-top: 20px;
+            padding: 12px;
+            background: #1a1a1a;
+            border-radius: 8px;
+            display: none;
+            animation: fadeIn 1.2s ease-out;
+            color: #a4ffb4;
+            white-space: pre-wrap;
+            font-family: monospace;
+            text-align: left;
+        }
+
+        .dropdown {
+            margin-top: 20px;
+        }
+
+        .dropdown button {
+            width: auto;
+            padding: 10px;
+            font-size: 1em;
+            background-color: #4e73df;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .dropdown button svg {
+            margin-left: 10px;
+            transition: transform 0.3s ease;
+        }
+
+        .dropdown-content {
+            display: none;
+            padding: 10px;
+            background-color: #1a1a1a;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            margin-top: 10px;
+            color: #a4ffb4;
+        }
+
+        .dropdown-content p {
+            font-size: 1em;
+            color: #a4ffb4;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            button {
+                padding: 12px;
+                font-size: 1.1em;
+            }
+        }
+
+        /* Custom styles for division layout */
+        .divisionStep {
+            margin-top: 10px;
+            font-family: monospace;
+            line-height: 1.5;
+        }
+
+        .divisionStep span {
+            display: inline-block;
+            width: 80px;
+        }
+    </style>
 </head>
 <body>
+    <canvas id="particleCanvas"></canvas>
     <div class="container">
         <h1>Cyclic Redundancy Check (CRC) Calculator</h1>
-        <form id="crcForm">
-            <label for="data">Enter Data (binary):</label>
-            <input type="text" id="data" required>
+
+        <div class="dropdown">
+            <button onclick="toggleDropdown()">Algorithm Steps
+                <svg id="dropdownArrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 011 0v.07l.007.008L8 10.207l5.646-5.646a.5.5 0 11.707.707l-6 6a.5.5 0 01-.707 0l-6-6a.5.5 0 010-.707z"/>
+                </svg>
+            </button>
+            <div class="dropdown-content" id="dropdownContent">
+                <p><strong>Step 1:</strong> Convert data to binary if in other format.</p>
+                <p><strong>Step 2:</strong> Append zeros to data based on polynomial degree.</p>
+                <p><strong>Step 3:</strong> Perform binary division using XOR.</p>
+                <p><strong>Step 4:</strong> Continue until remainder < polynomial degree.</p>
+                <p><strong>Step 5:</strong> Final remainder is the CRC checksum.</p>
+            </div>
+        </div>
+
+        <form id="crcForm" autocomplete="off">
+            <label for="dataFormat">Select Input Format:</label>
+            <select id="dataFormat" required>
+                <option value="binary">Binary</option>
+                <option value="hexadecimal">Hexadecimal</option>
+                <option value="decimal">Decimal</option>
+                <option value="octal">Octal</option>
+            </select>
+            <label for="data">Enter Data:</label>
+            <input type="text" id="data" required placeholder="e.g. 1101011011 for binary">
             <label for="polynomial">Enter Polynomial (binary):</label>
-            <input type="text" id="polynomial" required>
+            <input type="text" id="polynomial" required placeholder="e.g. 1011">
             <button type="submit">Calculate CRC</button>
         </form>
+
         <div id="result" class="result"></div>
-<div id="finalRemainder" class="result"></div>
-<div id="divisionTable" class="divisionTable"></div>
-<button onclick="location.href='index.html'">Home</button>
+        <div id="divisionTable" class="divisionTable"></div>
+        <button onclick="location.href='index.html'">Back to Home</button>
     </div>
-    <script src="script.js"></script>
+
+    <script>
+        function convertNumber(data, fromFormat, toFormat) {
+            let decimalValue;
+    
+            // Parse the input to decimal based on the fromFormat
+            switch (fromFormat.toLowerCase()) {
+                case 'binary':
+                    decimalValue = parseInt(data, 2);
+                    break;
+                case 'hexadecimal':
+                    decimalValue = parseInt(data, 16);
+                    break;
+                case 'decimal':
+                    decimalValue = parseInt(data, 10);
+                    break;
+                case 'octal':
+                    decimalValue = parseInt(data, 8);
+                    break;
+                default:
+                    alert("Invalid format selected.");
+                    return null; // Invalid format
+            }
+    
+            // If the input is invalid (e.g., invalid hex characters), return null
+            if (isNaN(decimalValue)) {
+                alert("Invalid input. Please check your data input for the selected format.");
+                return null;
+            }
+    
+            // Convert the decimal value to the target format
+            switch (toFormat.toLowerCase()) {
+                case 'binary':
+                    return decimalValue.toString(2);
+                case 'hexadecimal':
+                    return decimalValue.toString(16).toUpperCase();
+                case 'decimal':
+                    return decimalValue.toString(10);
+                case 'octal':
+                    return decimalValue.toString(8);
+                default:
+                    alert("Invalid target format.");
+                    return null; // Invalid format
+            }
+        }
+    
+        function calculateCRC(data, polynomial) {
+            const polyLength = polynomial.length;
+            let paddedData = data + '0'.repeat(polyLength - 1);
+            let partialData = paddedData;
+            let longDivisionOutput = `Binary form: ${data} divided by ${polynomial}\n\n`;
+            longDivisionOutput += `Binary form (added zeros): ${paddedData} divided by ${polynomial}\n`;
+            
+            // Start the working division steps
+            longDivisionOutput += `Working is:\n\n`;
+            let spacePrefix = ""; // Keeps track of spaces for each shift in division
+            
+            while (partialData.length >= polyLength) {
+                if (partialData[0] === '1') {
+                    // Display the current "dividend" part and polynomial divisor
+                    longDivisionOutput += `${spacePrefix}${partialData.slice(0, polyLength)}\n`;
+                    longDivisionOutput += `${spacePrefix}${'-'.repeat(polyLength)}\n`;
+                    longDivisionOutput += `${spacePrefix}${partialData}\n`;
+                    longDivisionOutput += `${spacePrefix}${polynomial}\n`;
+                    longDivisionOutput += `${spacePrefix}${'-'.repeat(polyLength)}\n`;
+    
+                    // Perform XOR and update partial data
+                    let subResult = [];
+                    for (let i = 0; i < polyLength; i++) {
+                        subResult.push(partialData[i] === polynomial[i] ? '0' : '1');
+                    }
+    
+                    // Update partialData by removing the used bits and shifting the remainder with next bits
+                    partialData = subResult.join('') + partialData.slice(polyLength);
+    
+                    // Add spaces to align the next steps
+                    spacePrefix += " ";
+                } else {
+                    // Just shift if the first bit is '0' (not divisible)
+                    partialData = partialData.slice(1);
+                    spacePrefix += " "; // Increase space to align with previous steps
+                }
+            }
+    
+            // The remainder is what's left in partialData after all XOR operations
+            const crc = partialData.slice(0, polyLength - 1);
+            const transmittedValue = data + crc;
+    
+            // Append the remainder and the transmitted value to the output
+            longDivisionOutput += `\nRemainder: ${crc}\nTransmitted Value: ${transmittedValue}\n`;
+            
+            return { crc, longDivisionOutput, transmittedValue };
+        }
+    
+        function toggleDropdown() {
+            const dropdownContent = document.getElementById('dropdownContent');
+            const arrowIcon = document.getElementById('dropdownArrow');
+            dropdownContent.style.display = dropdownContent.style.display === 'none' ? 'block' : 'none';
+            arrowIcon.style.transform = dropdownContent.style.display === 'none' ? 'rotate(0deg)' : 'rotate(180deg)';
+        }
+    
+        document.getElementById('crcForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const dataFormat = document.getElementById('dataFormat').value;
+            const data = document.getElementById('data').value.trim();
+            const polynomial = document.getElementById('polynomial').value.trim();
+    
+            // Convert data to binary, handle null if conversion failed
+            const binaryData = convertNumber(data, dataFormat, 'binary');
+            if (binaryData === null) return;
+    
+            // Polynomial is expected to be entered in binary
+            const binaryPolynomial = polynomial;
+    
+            const { crc, longDivisionOutput, transmittedValue } = calculateCRC(binaryData, binaryPolynomial);
+    
+            // Display results in long division format
+            const resultDiv = document.getElementById('result');
+            const divisionTableDiv = document.getElementById('divisionTable');
+    
+            resultDiv.style.display = 'block';
+            resultDiv.innerText = `CRC Checksum (Remainder): ${crc}`;
+            
+            divisionTableDiv.style.display = 'block';
+            divisionTableDiv.innerText = longDivisionOutput;
+        });
+    </script>
+    
+    
+    
 </body>
 </html>
