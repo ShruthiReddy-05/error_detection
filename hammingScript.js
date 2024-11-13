@@ -1,16 +1,65 @@
 document.getElementById('hammingForm')?.addEventListener('submit', function(event) {
     event.preventDefault();
 
-    const data = document.getElementById('data').value;
-    if (!/^[01]+$/.test(data)) {
-        alert('Please enter a valid binary number.');
-        return;
-    }
+    const dataFormat = document.getElementById('dataFormat').value;
+    const data = document.getElementById('data').value.trim();
 
-    const result = calculateHammingCode(data);
+    // Convert input data to binary
+    const binaryData = convertToBinary(data, dataFormat);
+    if (binaryData === null) return; // Stop if invalid conversion
+
+    // Calculate the Hamming code
+    const result = calculateHammingCode(binaryData);
+
+    // Display the Hamming code and steps
     document.getElementById('result').innerText = `Hamming Code: ${result.hammingCode}\n\nStep-by-Step Calculation:\n${result.steps.join('\n')}`;
 });
 
+// Convert input to binary based on the specified format
+function convertToBinary(data, format) {
+    const steps = [];
+    let decimalValue;
+
+    switch (format.toLowerCase()) {
+        case 'binary':
+            steps.push(`Input data is binary: ${data}`);
+            decimalValue = parseInt(data, 2);
+            break;
+        case 'decimal':
+            steps.push(`Converting decimal ${data} to binary.`);
+            decimalValue = parseInt(data, 10);
+            break;
+        case 'hexadecimal':
+            steps.push(`Converting hexadecimal ${data} to binary.`);
+            decimalValue = parseInt(data, 16);
+            break;
+        case 'octal':
+            steps.push(`Converting octal ${data} to binary.`);
+            decimalValue = parseInt(data, 8);
+            break;
+        default:
+            alert("Invalid format selected.");
+            return null;
+    }
+
+    if (isNaN(decimalValue)) {
+        alert("Invalid input. Please check your data input for the selected format.");
+        return null;
+    }
+
+    const binaryData = decimalValue.toString(2);
+    steps.push(`Binary equivalent: ${binaryData}`);
+
+    // Show the conversion steps
+    const conversionStepsElement = document.getElementById('conversionSteps');
+    if (conversionStepsElement) {
+        conversionStepsElement.innerText = steps.join('\n');
+    }
+
+    return binaryData;
+}
+
+// Calculate Hamming Code and provide detailed steps
 function calculateHammingCode(data) {
     const steps = [];
     const bits = data.split('').map(Number);
@@ -24,7 +73,7 @@ function calculateHammingCode(data) {
 
     const hammingCode = new Array(m + r).fill(0);
 
-    // Insert data bits into positions that are not powers of 2
+    // Insert data bits into positions that are not powers of 2 (parity bits positions)
     let dataIndex = 0;
     for (let i = 1; i <= hammingCode.length; i++) {
         if ((i & (i - 1)) === 0) { // Power of 2, reserved for parity bits
@@ -37,11 +86,11 @@ function calculateHammingCode(data) {
 
     // Calculate parity bits for each power of 2 position
     for (let i = 0; i < r; i++) {
-        const parityPos = 1 << i; // Calculate the position of the parity bit
+        const parityPos = 1 << i; // Position of the parity bit (power of 2)
         let count = 0;
 
         steps.push(`\nCalculating parity for position ${parityPos}:`);
-        
+
         // Check positions controlled by this parity bit
         for (let k = parityPos - 1; k < hammingCode.length; k += 2 * parityPos) {
             for (let j = k; j < k + parityPos && j < hammingCode.length; j++) {
@@ -52,6 +101,7 @@ function calculateHammingCode(data) {
             }
         }
 
+        // Set the parity bit (even parity)
         const parityBit = count % 2 === 0 ? 0 : 1;
         hammingCode[parityPos - 1] = parityBit;
         steps.push(`Set parity bit at position ${parityPos} to ${parityBit}\n`);
@@ -59,4 +109,8 @@ function calculateHammingCode(data) {
 
     return { hammingCode: hammingCode.join(''), steps };
 }
+
+
+
+
 

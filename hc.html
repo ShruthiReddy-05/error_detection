@@ -10,13 +10,23 @@
     <div class="container">
         <h1>Hamming Code Calculator</h1>
         <form id="hammingForm">
-            <label for="data">Enter 4 bit binary data:</label>
+            <label for="dataFormat">Select data format:</label>
+            <select id="dataFormat" required>
+                <option value="binary">Binary</option>
+                <option value="decimal">Decimal</option>
+                <option value="hexadecimal">Hexadecimal</option>
+                <option value="octal">Octal</option>
+            </select>
+            <label for="data">Enter data:</label>
             <input type="text" id="data" required>
             <button type="submit">Calculate Hamming Code</button>
         </form>
+        <div id="conversionSteps" class="result"></div>
         <div id="result" class="result"></div>
         <button onclick="location.href='index.html'">Home</button>
     </div>
     <script src="hammingScript.js"></script>
 </body>
 </html>
+
+
