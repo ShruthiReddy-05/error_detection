@@ -9,14 +9,103 @@
 <body>
     <div class="container">
         <h1>Checksum Calculator</h1>
+        
         <form id="checksumForm">
-            <label for="data">Enter 16-bit binary Data:</label>
-            <input type="text" id="data" required>
+            <label for="dataFormat">Select Input Format:</label>
+            <select id="dataFormat" required>
+                <option value="binary">Binary</option>
+                <option value="hexadecimal">Hexadecimal</option>
+                <option value="decimal">Decimal</option>
+                <option value="octal">Octal</option>
+            </select>
+            
+            <label for="data">Enter Data:</label>
+            <input type="text" id="data" required placeholder="e.g. 1101011011 for binary">
+            
             <button type="submit">Calculate Checksum</button>
         </form>
+        
         <div id="result" class="result"></div>
+        
         <button onclick="location.href='index.html'">Home</button>
     </div>
-    <script src="checksum.js"></script>
+
+    <script src="checksum.js">
+        function convertNumber(data, fromFormat, toFormat) {
+            let decimalValue;
+            
+            // Parse the input to decimal based on the fromFormat
+            switch (fromFormat.toLowerCase()) {
+                case 'binary':
+                    decimalValue = parseInt(data, 2);
+                    break;
+                case 'hexadecimal':
+                    decimalValue = parseInt(data, 16);
+                    break;
+                case 'decimal':
+                    decimalValue = parseInt(data, 10);
+                    break;
+                case 'octal':
+                    decimalValue = parseInt(data, 8);
+                    break;
+                default:
+                    alert("Invalid format selected.");
+                    return null; // Invalid format
+            }
+
+            if (isNaN(decimalValue)) {
+                alert("Invalid input. Please check your data input for the selected format.");
+                return null;
+            }
+            
+            switch (toFormat.toLowerCase()) {
+                case 'binary':
+                    return decimalValue.toString(2);
+                case 'hexadecimal':
+                    return decimalValue.toString(16).toUpperCase();
+                case 'decimal':
+                    return decimalValue.toString(10);
+                case 'octal':
+                    return decimalValue.toString(8);
+                default:
+                    alert("Invalid target format.");
+                    return null;
+            }
+        }
+
+        function calculateChecksum(binaryData) {
+            const steps = [];
+            let checksum = 0;
+
+            // Break binaryData into 16-bit chunks and sum them
+            for (let i = 0; i < binaryData.length; i += 16) {
+                const chunk = binaryData.slice(i, i + 16).padEnd(16, '0');
+                const chunkValue = parseInt(chunk, 2);
+                steps.push(`Chunk ${i / 16 + 1} (${chunk}): ${chunkValue.toString(2).padStart(16, '0')}`);
+                checksum += chunkValue;
+            }
+            
+            // Complement and restrict checksum to 16 bits
+            checksum = (~checksum >>> 0).toString(2).slice(-16).padStart(16, '0');
+            steps.push(`Final complemented checksum: ${checksum}`);
+            
+            return { checksum, steps };
+        }
+
+        document.getElementById('checksumForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const dataFormat = document.getElementById('dataFormat').value;
+            const data = document.getElementById('data').value.trim();
+
+            const binaryData = convertNumber(data, dataFormat, 'binary');
+            if (binaryData === null) return;
+
+            const result = calculateChecksum(binaryData);
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            resultDiv.innerText = `Checksum: ${result.checksum}\n\nStep-by-Step Calculation:\n${result.steps.join('\n')}`;
+        });
+    </script>
 </body>
 </html>
