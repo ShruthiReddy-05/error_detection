@@ -4,19 +4,279 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LRC Calculator</title>
-    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        /* Inline styles for consistency with crc.html */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #0f0f0f;
+            color: #d1ffd6;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #particleCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            padding: 40px;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.7));
+            border-radius: 12px;
+            box-shadow: 0 8px 15px rgba(0, 255, 0, 0.2);
+            text-align: center;
+            overflow-y: auto;
+            max-height: 90vh;
+            position: relative;
+            z-index: 1;
+            scrollbar-width: thin;
+            scrollbar-color: #00ff40 #1a1a1a;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            color: #66ff99;
+            text-shadow: 2px 2px 8px rgba(0, 255, 0, 0.8);
+        }
+
+        label, select {
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: block;
+            font-size: 1.1em;
+            color: #070707;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            font-size: 1.2em;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+            transition: all 0.3s ease;
+            background-color: #333;
+            color: #d1ffd6;
+        }
+
+        input:focus {
+            border-color: #00ff40;
+            outline: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            font-size: 1.2em;
+            background-color: #4e73df;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            background-color: #2e59d9;
+            transform: scale(1.1);
+        }
+
+        button:focus {
+            outline: none;
+        }
+
+        .result, .steps {
+            margin-top: 20px;
+            padding: 12px;
+            background: #1a1a1a;
+            border-radius: 8px;
+            color: #a4ffb4;
+            white-space: pre-wrap;
+            font-family: monospace;
+            text-align: left;
+            display: none; /* Hide by default */
+        }
+
+        .steps {
+            display: none;
+            animation: fadeIn 1.2s ease-out;
+        }
+
+        .dropdown {
+            margin-top: 20px;
+        }
+
+        .dropdown button {
+            width: auto;
+            padding: 10px;
+            font-size: 1em;
+            background-color: #4e73df;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+
+        .dropdown button svg {
+            margin-left: 10px;
+            transition: transform 0.3s ease;
+        }
+
+        .dropdown-content {
+            display: none;
+            padding: 10px;
+            background-color: #1a1a1a;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            margin-top: 10px;
+            color: #a4ffb4;
+        }
+
+        .dropdown-content p {
+            font-size: 1em;
+            color: #a4ffb4;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            button {
+                padding: 12px;
+                font-size: 1.1em;
+            }
+        }
+    </style>
 </head>
 <body>
+    <canvas id="particleCanvas"></canvas>
     <div class="container">
         <h1>Longitudinal Redundancy Check (LRC) Calculator</h1>
-        <form id="lrcForm">
-            <label for="data">Enter Data (binary, separated by spaces):</label>
-            <input type="text" id="data" required>
+
+        <div class="dropdown">
+            <button onclick="toggleDropdown()">Algorithm Steps
+                <svg id="dropdownArrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 011 0v.07l.007.008L8 10.207l5.646-5.646a.5.5 0 11.707.707l-6 6a.5.5 0 01-.707 0l-6-6a.5.5 0 010-.707z"/>
+                </svg>
+            </button>
+            <div class="dropdown-content" id="dropdownContent">
+                <p><strong>Step 1:</strong> Convert data to binary if in other format.</p>
+                <p><strong>Step 2:</strong> Divide data into blocks.</p>
+                <p><strong>Step 3:</strong> Perform binary addition of each block using XOR.</p>
+                <p><strong>Step 4:</strong> Final XOR result is the LRC checksum.</p>
+            </div>
+        </div>
+
+        <form id="lrcForm" autocomplete="off">
+            <label for="dataFormat">Select Input Format:</label>
+            <select id="dataFormat" required>
+                <option value="binary">Binary</option>
+                <option value="hexadecimal">Hexadecimal</option>
+                <option value="decimal">Decimal</option>
+                <option value="octal">Octal</option>
+            </select>
+            <label for="data">Enter Data (separated by spaces):</label>
+            <input type="text" id="data" required placeholder="e.g. 1101 1010 1111">
             <button type="submit">Calculate LRC</button>
         </form>
+
         <div id="result" class="result"></div>
-        <button onclick="location.href='index.html'">Home</button>
+        <div id="steps" class="steps"></div>
+        <button onclick="location.href='index.html'">Back to Home</button>
     </div>
-    <script src="script.js"></script>
+
+    <script>
+        function toggleDropdown() {
+            const dropdownContent = document.getElementById('dropdownContent');
+            const arrowIcon = document.getElementById('dropdownArrow');
+            dropdownContent.style.display = dropdownContent.style.display === 'none' ? 'block' : 'none';
+            arrowIcon.style.transform = dropdownContent.style.display === 'none' ? 'rotate(0deg)' : 'rotate(180deg)';
+        }
+
+        function convertNumber(data, fromFormat) {
+            switch (fromFormat.toLowerCase()) {
+                case 'binary': return parseInt(data, 2);
+                case 'hexadecimal': return parseInt(data, 16);
+                case 'decimal': return parseInt(data, 10);
+                case 'octal': return parseInt(data, 8);
+                default: return NaN;
+            }
+        }
+
+        function formatBinary(num, length) {
+            return num.toString(2).padStart(length, '0');
+        }
+
+        function calculateLRC(data, dataFormat) {
+            const blocks = data.split(' ').map(block => convertNumber(block, dataFormat));
+            if (blocks.some(isNaN)) {
+                alert("Invalid input. Please check your data input for the selected format.");
+                return { lrc: null, stepsOutput: "" };
+            }
+
+            let lrc = 0;
+            let stepsOutput = "Steps of LRC Calculation:\n\n";
+            blocks.forEach((block, index) => {
+                const blockBinary = formatBinary(block, blocks[0].toString(2).length);
+                const lrcBinary = formatBinary(lrc, blocks[0].toString(2).length);
+		stepsOutput += `Block ${index + 1}:\n`;
+                stepsOutput += `Block: ${blockBinary}\n`;
+                stepsOutput += `Current LRC: ${lrcBinary}\n`;
+                lrc ^= block; // XOR operation
+                stepsOutput += `Updated LRC: ${formatBinary(lrc, blockBinary.length)}\n\n`;
+            });
+
+            return { lrc: lrc, stepsOutput: stepsOutput };
+        }
+
+        document.getElementById('lrcForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const data = document.getElementById('data').value;
+            const dataFormat = document.getElementById('dataFormat').value;
+
+            const result = calculateLRC(data, dataFormat);
+
+            const resultDiv = document.getElementById('result');
+            const stepsDiv = document.getElementById('steps');
+
+            if (result.lrc !== null) {
+                resultDiv.textContent = "LRC Checksum: " + formatBinary(result.lrc, data.split(' ')[0].length) + "\n";
+                stepsDiv.textContent = result.stepsOutput;
+                resultDiv.style.display = 'block';
+                stepsDiv.style.display = 'block';
+            } else {
+                resultDiv.style.display = 'none';
+                stepsDiv.style.display = 'none';
+            }
+        });
+    </script>
 </body>
 </html>
