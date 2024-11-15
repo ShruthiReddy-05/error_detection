@@ -62,8 +62,7 @@
             margin-bottom: 10px;
             display: block;
             font-size: 1.1em;
-            color: #0cff29;
-            background-color: #000000
+            color: #070707;
         }
 
         input {
@@ -189,13 +188,21 @@
             </button>
             <div class="dropdown-content" id="dropdownContent">
                 <p><strong>Step 1:</strong> Arrange data bits vertically.</p>
-                <p><strong>Step 2:</strong> Calculate parity for each column.</p>
-                <p><strong>Step 3:</strong> Append parity bits as the VRC.</p>
+                <p><strong>Step 2:</strong> For each bit column, count the number of 1s.</p>
+		<p><strong>Step 3:</strong> Set parity bit for each column based on the count: even count = 0, odd count = 1.</p>
+                <p><strong>Step 4:</strong> Display the calculated VRC bits.</p>
             </div>
         </div>
 
         <form id="vrcForm" autocomplete="off">
-            <label for="data">Enter Data (binary, space-separated rows):</label>
+            <label for="dataFormat">Select Input Format:</label>
+            <select id="dataFormat" required>
+                <option value="binary">Binary</option>
+                <option value="hexadecimal">Hexadecimal</option>
+                <option value="decimal">Decimal</option>
+                <option value="octal">Octal</option>
+            </select>
+            <label for="data">Enter Data (space-separated rows):</label>
             <input type="text" id="data" required placeholder="e.g. 1101 1010 1001">
             <button type="submit">Calculate VRC</button>
         </form>
@@ -203,83 +210,67 @@
         <div id="result" class="result" style="display: none;"></div>
         <div id="steps" class="steps" style="display: none;"></div>
 
-        <form id="checkVrcForm" autocomplete="off">
-            <label for="receivedData">Enter Received Data (including VRC):</label>
-            <input type="text" id="receivedData" required placeholder="e.g. 11010 10100 10010">
-            <button type="submit">Check VRC</button>
-        </form>
-        
-        <div id="checkResult" class="result" style="display: none;"></div>
-        <button onclick="location.href='index.html'">Back to Home</button>
-    </div>
+        <button onclick="location.href='index.html'" style="margin-top: 20px;">Back to Home</button>
 
-    <script>
-        function toggleDropdown() {
-            const dropdownContent = document.getElementById('dropdownContent');
-            const arrowIcon = document.getElementById('dropdownArrow');
-            dropdownContent.style.display = dropdownContent.style.display === 'none' ? 'block' : 'none';
-            arrowIcon.style.transform = dropdownContent.style.display === 'none' ? 'rotate(0deg)' : 'rotate(180deg)';
-        }
-
-        function calculateVRC(data) {
-            const rows = data.split(' ').map(row => row.trim());
-            const columnCount = rows[0].length;
-            let vrcBits = '';
-            let stepsOutput = "Steps of VRC Calculation:\n\n";
-
-            for (let col = 0; col < columnCount; col++) {
-                let count = 0;
-                rows.forEach(row => {
-                    stepsOutput += `${row}\n`;
-                    count += row[col] === '1' ? 1 : 0;
-                });
-                
-                const parity = count % 2 === 0 ? '0' : '1';
-                stepsOutput += `Parity for column ${col + 1}: ${parity}\n\n`;
-                vrcBits += parity;
+        <script>
+            function toggleDropdown() {
+                const dropdownContent = document.getElementById('dropdownContent');
+                const arrowIcon = document.getElementById('dropdownArrow');
+                dropdownContent.style.display = dropdownContent.style.display === 'none' ? 'block' : 'none';
+                arrowIcon.style.transform = dropdownContent.style.display === 'none' ? 'rotate(0deg)' : 'rotate(180deg)';
             }
 
-            stepsOutput += `VRC Bits: ${vrcBits}\n`;
-            return { vrcBits, stepsOutput };
-        }
-
-        document.getElementById('vrcForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-            const data = document.getElementById('data').value.trim();
-            const { vrcBits, stepsOutput } = calculateVRC(data);
-
-            const resultDiv = document.getElementById('result');
-            const stepsDiv = document.getElementById('steps');
-            resultDiv.style.display = 'block';
-            stepsDiv.style.display = 'block';
-            resultDiv.innerText = `VRC: ${vrcBits}`;
-            stepsDiv.innerText = stepsOutput;
-        });
-
-        function checkVRC(data, receivedData) {
-            const dataBits = data.split(' ').map(row => row.trim());
-            const receivedBits = receivedData.split(' ').map(row => row.trim());
-
-            let errorDetected = false;
-            for (let i = 0; i < dataBits.length; i++) {
-                for (let j = 0; j < dataBits[i].length; j++) {
-                    if (dataBits[i][j] !== receivedBits[i][j]) {
-                        errorDetected = true;
-                    }
+            function convertNumber(data, fromFormat) {
+                switch (fromFormat.toLowerCase()) {
+                    case 'binary': return parseInt(data, 2);
+                    case 'hexadecimal': return parseInt(data, 16);
+                    case 'decimal': return parseInt(data, 10);
+                    case 'octal': return parseInt(data, 8);
+                    default: return NaN;
                 }
             }
-            return errorDetected ? "Error detected in received data." : "No error detected.";
-        }
 
-        document.getElementById('checkVrcForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-            const receivedData = document.getElementById('receivedData').value.trim();
-            const data = document.getElementById('data').value.trim();
-            const resultDiv = document.getElementById('checkResult');
-            const checkResult = checkVRC(data, receivedData);
-            resultDiv.style.display = 'block';
-            resultDiv.innerText = checkResult;
-        });
-    </script>
+            function formatBinary(num, length) {
+                return num.toString(2).padStart(length, '0');
+            }
+
+            function calculateVRC(data, dataFormat) {
+                const rows = data.split(' ').map(row => formatBinary(convertNumber(row, dataFormat), row.length));
+                const columnCount = rows[0].length;
+                let vrcBits = '';
+                let stepsOutput = "Steps of VRC Calculation:\n\n";
+
+                for (let col = 0; col < columnCount; col++) {
+                    let count = 0;
+                    rows.forEach(row => {
+                        stepsOutput += `${row}\n`;
+                        count += row[col] === '1' ? 1 : 0;
+                    });
+                    
+                    const parity = count % 2 === 0 ? '0' : '1';
+                    stepsOutput += `Parity for column ${col + 1}: ${parity}\n\n`;
+                    vrcBits += parity;
+                }
+
+                stepsOutput += `VRC Bits: ${vrcBits}\n`;
+                return { vrcBits, stepsOutput };
+            }
+
+            document.getElementById('vrcForm').addEventListener('submit', function(event) {
+                event.preventDefault();
+                const data = document.getElementById('data').value.trim();
+                const dataFormat = document.getElementById('dataFormat').value;
+
+                const { vrcBits, stepsOutput } = calculateVRC(data, dataFormat);
+
+                const resultDiv = document.getElementById('result');
+                const stepsDiv = document.getElementById('steps');
+                resultDiv.style.display = 'block';
+                stepsDiv.style.display = 'block';
+                resultDiv.innerText = `VRC: ${vrcBits}`;
+                stepsDiv.innerText = stepsOutput;
+            });
+        </script>
+    </div>
 </body>
 </html>
