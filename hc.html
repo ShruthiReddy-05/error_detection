@@ -4,11 +4,197 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hamming Code Calculator</title>
-    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #0f0f0f;
+            color: #d1ffd6;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            padding: 40px;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.7));
+            border-radius: 12px;
+            box-shadow: 0 8px 15px rgba(0, 255, 0, 0.2);
+            text-align: center;
+            overflow-y: auto;
+            max-height: 90vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            color: #66ff99;
+            text-shadow: 2px 2px 8px rgba(0, 255, 0, 0.8);
+        }
+
+        label, select {
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: block;
+            font-size: 1.1em;
+            color: #0cff29;
+            background-color: #000000
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            font-size: 1.2em;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+            transition: all 0.3s ease;
+            background-color: #333;
+            color: #d1ffd6;
+        }
+
+        input:focus {
+            border-color: #00ff40;
+            outline: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            font-size: 1.2em;
+            background-color: #4e73df;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            background-color: #2e59d9;
+            transform: scale(1.1);
+        }
+
+        button:focus {
+            outline: none;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 12px;
+            background: #1a1a1a;
+            border-radius: 8px;
+            color: #a4ffb4;
+            white-space: pre-wrap;
+            font-family: monospace;
+            text-align: left;
+        }
+        .dropdown {
+            margin-top: 20px;
+        }
+
+        .dropdown button {
+            width: auto;
+            padding: 10px;
+            font-size: 1em;
+            background-color: #4e73df;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .dropdown button svg {
+            margin-left: 10px;
+            transition: transform 0.3s ease;
+        }
+
+        .dropdown-content {
+            display: none;  /* Initially hidden */
+            padding: 10px;
+            background-color: #1a1a1a;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            margin-top: 10px;
+            color: #a4ffb4;
+        }
+
+        .dropdown-content p {
+            font-size: 1em;
+            color: #a4ffb4;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            button {
+                padding: 12px;
+                font-size: 1.1em;
+            }
+        }
+                /* Custom styles for division layout */
+                .divisionStep {
+            margin-top: 10px;
+            font-family: monospace;
+            line-height: 1.5;
+        }
+
+        .divisionStep span {
+            display: inline-block;
+            width: 80px;
+        }
+
+        /* Style for binary option background */
+        select#dataFormat option[value="binary"]:checked {
+            background-color: black;
+            color: white;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <h1>Hamming Code Calculator</h1>
+        <div class="dropdown">
+            <button onclick="toggleDropdown()">Algorithm Steps
+                <svg id="dropdownArrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 011 0v.07l.007.008L8 10.207l5.646-5.646a.5.5 0 11.707.707l-6 6a.5.5 0 01-.707 0l-6-6a.5.5 0 010-.707z"/>
+                </svg>
+            </button>
+            <div class="dropdown-content" id="dropdownContent">
+                <p><strong>Step 1:</strong> After receiving the codeword, the receiver calculates the parity checks for each parity bit position (p1, p2, p4, etc.) using the same method as encoding.</p>
+                <p><strong>Step 2:</strong> If any of the parity checks yield a non-zero result, it indicates an error in the transmitted codeword. The binary result of all parity checks is used to locate the position of the error.
+                <ul style = "text-align: left; padding-left: 75px;"  >
+                    <li>If the result is zero, no error is detected.</li>
+                    <li>If the result is non-zero, the error is at the position indicated by the binary result of the parity checks.</li>
+                </ul>
+            </p>
+                    <p><strong>Step 3:</strong> Once the error position is identified, the receiver can flip the corresponding bit in the received codeword to correct the error.</p>
+            </div>
+        </div>
         <form id="hammingForm">
             <label for="dataFormat">Select data format:</label>
             <select id="dataFormat" required>
@@ -18,15 +204,13 @@
                 <option value="octal">Octal</option>
             </select>
             <label for="data">Enter data:</label>
-            <input type="text" id="data" required>
+            <input type="text" id="data" required placeholder="e.g. 1101011011 for binary">
             <button type="submit">Calculate Hamming Code</button>
+            <div id="conversionSteps" class="result"></div>
+            <div id="result" class="result"></div>
+            <button onclick="location.href='index.html'">Back to Home</button>
         </form>
-        <div id="conversionSteps" class="result"></div>
-        <div id="result" class="result"></div>
-        <button onclick="location.href='index.html'">Home</button>
     </div>
     <script src="hammingScript.js"></script>
 </body>
 </html>
-
-

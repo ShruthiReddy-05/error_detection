@@ -1,3 +1,10 @@
+function toggleDropdown() {
+    const dropdownContent = document.getElementById('dropdownContent');
+    const arrowIcon = document.getElementById('dropdownArrow');
+    dropdownContent.style.display = dropdownContent.style.display === 'none' ? 'block' : 'none';
+    arrowIcon.style.transform = dropdownContent.style.display === 'none' ? 'rotate(0deg)' : 'rotate(180deg)';
+}
+
 document.getElementById('hammingForm')?.addEventListener('submit', function(event) {
     event.preventDefault();
 
